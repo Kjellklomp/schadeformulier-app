@@ -35,13 +35,15 @@ De 17 standaardomschrijvingen:
 11. Haalde in.
 12. Ging rechtsaf.
 13. Ging linksaf.
-14. Reed achteruit (op de openbare weg, niet het uitparkeren zelf — zie nummer 2 voor achteruit een parkeervak uitrijden).
+14. Reed achteruit — geldt voor elke achteruitrijdende beweging, inclusief achteruit een parkeervak uitrijden (dan vaak samen met nummer 2 en/of 4).
 15. Kwam op de weghelft/rijbaan bestemd voor het tegemoetkomend verkeer.
 16. Kwam van rechts op een kruising.
 17. Lette niet op een voorrangsbord of rood verkeerslicht.
 
 Let vooral goed op het verschil tussen UITPARKEREN (nummer 2: een parkeervak verlaten) en INPARKEREN (nummer 3: een parkeervak in rijden om te gaan parkeren) — dit zijn tegengestelde bewegingen die vaak door elkaar gehaald worden. Lees de beschrijving zorgvuldig: reed het voertuig een parkeerplaats UIT (2/4) of juist IN (3)?
-Wees terughoudend: kies alleen vakjes waar de tekst duidelijk op wijst.`;
+
+Meerdere vakjes kunnen tegelijk van toepassing zijn op dezelfde manoeuvre — dat is normaal en gewenst, kies niet slechts het ene "beste" vakje. Voorbeeld: een auto die achteruit een parkeervak uitrijdt de weg op, raakt vaak tegelijk vakje 2 (verliet een parkeerplaats), vakje 4 (reed weg van een parkeerplaats/inrit) én vakje 14 (reed achteruit) — alle drie tegelijk correct. Ga elk vakje afzonderlijk na en neem ALLE vakjes op die duidelijk van toepassing zijn.
+Wees wel terughoudend over vakjes die niet duidelijk door de tekst worden ondersteund: voeg niets toe op basis van giswerk.`;
 
 export const PARTNER_KENTEKEN_OCR_SYSTEM = `Lees dit Nederlandse of Belgische kentekenbewijs en geef ALLEEN geldig JSON: {"kenteken":"..."}`;
 
