@@ -65,6 +65,19 @@ export async function buildFilledPdf({
   const t: Partial<ToedrachtOcrData> = toedracht ?? {};
 
   let fieldSeq = 0;
+  const MIN_FONT_SIZE = 5.5;
+  const HORIZONTAL_PADDING = 3; // pdf-lib's eigen veldpadding (2 × 1pt) plus wat lucht
+
+  // Zoekt de grootste lettergrootte (aflopend vanaf `preferredSize`) waarbij `value` nog
+  // binnen `maxWidth` past, zodat lange waarden (bv. een lange verzekeraarsnaam) verkleinen
+  // in plaats van afgekapt te worden.
+  function fitFontSize(value: string, preferredSize: number, maxWidth: number): number {
+    let size = preferredSize;
+    while (size > MIN_FONT_SIZE && font.widthOfTextAtSize(value, size) > maxWidth) {
+      size -= 0.5;
+    }
+    return size;
+  }
 
   // Legt een écht (leeg of vooringevuld) PDF-formulierveld op de plek van `key`, zodat de
   // ontvanger het na downloaden nog kan corrigeren of aanvullen — de tekst wordt dus niet
@@ -103,7 +116,10 @@ export async function buildFilledPdf({
       backgroundColor: undefined,
       borderColor: undefined,
     });
-    tf.setFontSize(coord.size ?? 9);
+    const preferredSize = coord.size ?? 9;
+    const fontSize =
+      value && !opts?.multiline ? fitFontSize(value, preferredSize, coord.width - HORIZONTAL_PADDING) : preferredSize;
+    tf.setFontSize(fontSize);
     if (value) tf.setText(value);
   }
 

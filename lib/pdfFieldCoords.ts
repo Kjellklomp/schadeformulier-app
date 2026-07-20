@@ -15,8 +15,12 @@ export interface FieldCoord {
 }
 
 export const FIELD_COORDS: Record<string, FieldCoord> = {
-  datum: { x: 115, yBottom: 86.7, width: 42 },
-  tijd: { x: 153, yBottom: 86.3, width: 45 },
+  // "Datum aanrijding"/"Tijd" hebben een eigen onderlijn vlak onder het label (y≈87.4) én
+  // een leeg schrijfvak daarónder, tot de rand van vak 1 op y≈101.4. De waarde hoort in dat
+  // lege vak (niet naast/over het label), over de volle breedte van elke kolom — kolom-
+  // scheiding gemeten op x=134.5.
+  datum: { x: 44, yBottom: 98, width: 87 },
+  tijd: { x: 138, yBottom: 98, width: 37 },
   locatie_plaats: { x: 272, yBottom: 86.9, width: 210 },
   locatie_land: { x: 200, yBottom: 99.0, width: 60 },
   locatie_straat: { x: 272, yBottom: 99.0, width: 205 },
