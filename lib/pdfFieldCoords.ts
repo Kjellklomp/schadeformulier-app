@@ -92,9 +92,6 @@ export const TOEDRACHT_CHECKBOX_A = {
   } as Record<number, number>,
 };
 
-// vak 13 situatieschets — tekengebied
-export const SCHETS_BOX = { x0: 148, x1: 495, top: 653, bottom: 804 };
-
 export function toPdfY(yBottomFromTop: number, nudge = 1.2): number {
   return PDF_PAGE.height - yBottomFromTop + nudge;
 }

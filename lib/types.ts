@@ -86,17 +86,6 @@ export interface RijbewijsState {
 
 export type JaNeeOnbekend = "ja" | "nee" | "onbekend";
 
-export interface SchetsData {
-  mogelijk: boolean;
-  wegtype: "rechte_weg" | "kruising" | "rotonde" | "parkeerplaats" | "onbekend";
-  positie_A: "midden" | "links" | "rechts" | "geparkeerd";
-  richting_A: "boven" | "onder" | "links" | "rechts" | "stilstaand";
-  positie_B: "midden" | "links" | "rechts" | "geparkeerd";
-  richting_B: "boven" | "onder" | "links" | "rechts" | "stilstaand";
-  botspunt: "voor" | "achter" | "links" | "rechts" | "zijkant_links" | "zijkant_rechts";
-  opmerking_schets: string;
-}
-
 export interface ToedrachtOcrData {
   datum: string;
   tijd: string;
@@ -110,7 +99,6 @@ export interface ToedrachtOcrData {
   opmerkingen: string;
   toedracht_vakjes_A: number[];
   toedracht_toelichting: string;
-  schets: SchetsData;
 }
 
 export interface ToedrachtState {

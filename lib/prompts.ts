@@ -19,21 +19,10 @@ export const TOEDRACHT_ANALYSE_SYSTEM = `Je helpt bij het invullen van het Europ
  "zichtbare_schade_A": "korte beschrijving van de zichtbare schade aan voertuig A",
  "opmerkingen": "neutrale, feitelijke samenvatting van de toedracht in 2-4 zinnen",
  "toedracht_vakjes_A": [getallen 1-17 die vermoedelijk van toepassing zijn op voertuig A],
- "toedracht_toelichting": "één zin uitleg + waarschuwing dit ter plaatse te verifiëren",
- "schets": {
-   "mogelijk": true|false,
-   "wegtype": "rechte_weg"|"kruising"|"rotonde"|"parkeerplaats"|"onbekend",
-   "positie_A": "midden"|"links"|"rechts"|"geparkeerd",
-   "richting_A": "boven"|"onder"|"links"|"rechts"|"stilstaand",
-   "positie_B": "midden"|"links"|"rechts"|"geparkeerd",
-   "richting_B": "boven"|"onder"|"links"|"rechts"|"stilstaand",
-   "botspunt": "voor"|"achter"|"links"|"rechts"|"zijkant_links"|"zijkant_rechts",
-   "opmerking_schets": "één korte zin die uitlegt wat de schets toont"
- }
+ "toedracht_toelichting": "één zin uitleg + waarschuwing dit ter plaatse te verifiëren"
 }
 De 17 standaardomschrijvingen: 1 stond geparkeerd/stil, 2 verliet parkeerplaats/opende deur, 3 ging parkeren, 4 reed weg van/op parkeerplaats-inrit, 5 reed op parkeerplaats-inrit-onverharde weg, 6 wilde rotonde oprijden, 7 reed op rotonde, 8 botste op achterzijde zelfde rijstrook, 9 reed in zelfde richting andere rijstrook, 10 veranderde van rijstrook, 11 haalde in, 12 ging rechtsaf, 13 ging linksaf, 14 reed achteruit, 15 kwam op rijbaan tegemoetkomend verkeer, 16 kwam van rechts op kruising, 17 lette niet op voorrangsteken/rood licht.
-Wees terughoudend: kies alleen vakjes waar de tekst duidelijk op wijst.
-Voor "schets": zet "mogelijk" op false als de tekst te vaag of te complex is om een simpele, betrouwbare schematische bovenaanzicht-tekening van te maken (bijvoorbeeld bij meerdere voertuigen, onduidelijke wegsituatie, of tegenstrijdige details) — wees hier liever te voorzichtig dan te stellig, een verkeerde schets is erger dan geen schets.`;
+Wees terughoudend: kies alleen vakjes waar de tekst duidelijk op wijst.`;
 
 export const PARTNER_KENTEKEN_OCR_SYSTEM = `Lees dit Nederlandse of Belgische kentekenbewijs en geef ALLEEN geldig JSON: {"kenteken":"..."}`;
 

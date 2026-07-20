@@ -61,7 +61,6 @@ export default function StepOverzicht({
   const [pdfStatus, setPdfStatus] = useState<OcrStatus>("idle");
   const [pdfError, setPdfError] = useState("");
   const [pdfUrl, setPdfUrl] = useState<string | null>(null);
-  const [schetsGenerated, setSchetsGenerated] = useState(false);
   const [copied, setCopied] = useState(false);
   const [elapsedMinutes] = useState(() => Math.max(1, Math.round((Date.now() - startTime) / 60000)));
 
@@ -76,11 +75,10 @@ export default function StepOverzicht({
     setPdfStatus("busy");
     setPdfError("");
     try {
-      const { bytes, schetsGenerated: generated } = await buildFilledPdf({ person, vn, kenteken: k, verzekering: v, toedracht: t });
+      const { bytes } = await buildFilledPdf({ person, vn, kenteken: k, verzekering: v, toedracht: t });
       const blob = new Blob([new Uint8Array(bytes)], { type: "application/pdf" });
       const url = URL.createObjectURL(blob);
       setPdfUrl(url);
-      setSchetsGenerated(generated);
       setPdfStatus("ok");
     } catch (err) {
       setPdfStatus("err");
@@ -230,12 +228,8 @@ export default function StepOverzicht({
       {pdfStatus === "ok" && pdfUrl && (
         <>
           <SummaryBox>
-            <b>PDF gegenereerd</b> — jouw kant (Voertuig A) is overgenomen op het echte Europees schadeformulier.{" "}
-            {schetsGenerated
-              ? "Vak 13 bevat een automatisch gegenereerde conceptschets — controleer deze samen met de tegenpartij."
-              : t?.schets && t.schets.mogelijk === false
-                ? "Vak 13 (situatieschets) is opengelaten — de AI schatte in dat een betrouwbare schets hier niet mogelijk was, dus dit moet je samen met de tegenpartij met de hand tekenen."
-                : "Vak 13 (situatieschets) is opengelaten — vul dit samen met de tegenpartij met de hand in."}
+            <b>PDF gegenereerd</b> — jouw kant (Voertuig A) is overgenomen op het echte Europees schadeformulier. Vak
+            13 (situatieschets) is opengelaten — teken deze samen met de tegenpartij met de hand in.
           </SummaryBox>
           <a
             href={pdfUrl}

@@ -1,11 +1,11 @@
 import { PDFDocument, StandardFonts, rgb } from "pdf-lib";
 import { PersonState, VerzekeringnemerState, KentekenOcrData, VerzekeringOcrData, ToedrachtOcrData } from "./types";
-import { FIELD_COORDS, CHECKBOX_COORDS, TOEDRACHT_CHECKBOX_A, SCHETS_BOX, toPdfY } from "./pdfFieldCoords";
-import { generateSchetsDataUrl } from "./situationSketch";
+import { FIELD_COORDS, CHECKBOX_COORDS, TOEDRACHT_CHECKBOX_A, toPdfY } from "./pdfFieldCoords";
 
 const PDF_TEMPLATE_URL = "/schadeformulier-leeg.pdf";
 const INK_COLOR = rgb(0.09, 0.16, 0.29);
 const AI_COLOR = rgb(0.71, 0.26, 0.18);
+const CHECKBOX_MARK_SIZE = 9;
 
 export interface BuildFilledPdfInput {
   person: PersonState;
@@ -17,13 +17,6 @@ export interface BuildFilledPdfInput {
 
 export interface BuildFilledPdfResult {
   bytes: Uint8Array;
-  schetsGenerated: boolean;
-}
-
-function dataUrlToBytes(dataUrl: string): Uint8Array {
-  const base64 = dataUrl.split(",")[1];
-  const binary = atob(base64);
-  return Uint8Array.from(binary, (c) => c.charCodeAt(0));
 }
 
 const ISO_DATE_PATTERN = /^(\d{4})-(\d{2})-(\d{2})$/;
@@ -78,9 +71,19 @@ export async function buildFilledPdf({
     page.drawText(value, { x: coord.x, y: toPdfY(coord.yBottom), size, font, color: INK_COLOR });
   }
 
+  // Centreert de "X" exact op het middelpunt van het vakje, op basis van de echte
+  // font-metingen (drawText plaatst tekst anders vanaf de linker-benedenhoek van de baseline).
   function checkX(coord?: { x: number; y: number }) {
     if (!coord) return;
-    page.drawText("X", { x: coord.x, y: toPdfY(coord.y, 2), size: 10, font, color: AI_COLOR });
+    const glyphWidth = font.widthOfTextAtSize("X", CHECKBOX_MARK_SIZE);
+    const glyphHeight = font.heightAtSize(CHECKBOX_MARK_SIZE, { descender: false });
+    page.drawText("X", {
+      x: coord.x - glyphWidth / 2,
+      y: toPdfY(coord.y, 0) - glyphHeight / 2,
+      size: CHECKBOX_MARK_SIZE,
+      font,
+      color: AI_COLOR,
+    });
   }
 
   function wrapDraw(text: string | undefined, keys: string[], maxWidth: number, size = 8) {
@@ -146,23 +149,8 @@ export async function buildFilledPdf({
   wrapDraw(t.zichtbare_schade_A, ["zichtbare_schade_1", "zichtbare_schade_2"], 95);
   wrapDraw(t.opmerkingen, ["opmerkingen_1", "opmerkingen_2", "opmerkingen_3"], 160);
 
-  let schetsGenerated = false;
-  if (t.schets?.mogelijk) {
-    try {
-      const dataUrl = generateSchetsDataUrl(t.schets);
-      const pngImage = await pdfDoc.embedPng(dataUrlToBytes(dataUrl));
-      const bx = SCHETS_BOX.x0;
-      const by = toPdfY(SCHETS_BOX.bottom, 0);
-      const bw = SCHETS_BOX.x1 - SCHETS_BOX.x0;
-      const bh = SCHETS_BOX.bottom - SCHETS_BOX.top;
-      page.drawImage(pngImage, { x: bx, y: by, width: bw, height: bh });
-      page.drawText("AI-concept — controleer en pas zo nodig aan", { x: bx + 4, y: by + 4, size: 6.5, font, color: AI_COLOR });
-      schetsGenerated = true;
-    } catch {
-      schetsGenerated = false;
-    }
-  }
+  // Vak 13 (situatieschets) laten we altijd leeg — dat tekenen beide partijen samen met de hand in.
 
   const outBytes = await pdfDoc.save();
-  return { bytes: outBytes, schetsGenerated };
+  return { bytes: outBytes };
 }
