@@ -21,7 +21,26 @@ export const TOEDRACHT_ANALYSE_SYSTEM = `Je helpt bij het invullen van het Europ
  "toedracht_vakjes_A": [getallen 1-17 die vermoedelijk van toepassing zijn op voertuig A],
  "toedracht_toelichting": "één zin uitleg + waarschuwing dit ter plaatse te verifiëren"
 }
-De 17 standaardomschrijvingen: 1 stond geparkeerd/stil, 2 verliet parkeerplaats/opende deur, 3 ging parkeren, 4 reed weg van/op parkeerplaats-inrit, 5 reed op parkeerplaats-inrit-onverharde weg, 6 wilde rotonde oprijden, 7 reed op rotonde, 8 botste op achterzijde zelfde rijstrook, 9 reed in zelfde richting andere rijstrook, 10 veranderde van rijstrook, 11 haalde in, 12 ging rechtsaf, 13 ging linksaf, 14 reed achteruit, 15 kwam op rijbaan tegemoetkomend verkeer, 16 kwam van rechts op kruising, 17 lette niet op voorrangsteken/rood licht.
+De 17 standaardomschrijvingen:
+1. Stond geparkeerd of stilstaand (het voertuig stond al stil, was niet aan het in- of uitparkeren).
+2. Verliet een parkeerplaats, of opende een portier — d.w.z. UITPARKEREN: het voertuig stond geparkeerd/stil en zette zich net in beweging om het parkeervak te verlaten, of iemand opende een portier vanuit een stilstaand/geparkeerd voertuig.
+3. Ging parkeren — d.w.z. INPARKEREN: het voertuig was juist bezig een parkeervak in te rijden om te gaan parkeren (nog in beweging, nog niet stilstaand). Dit is het TEGENOVERGESTELDE van nummer 2: bij 2 rijdt het voertuig een parkeervak UIT, bij 3 rijdt het een parkeervak IN.
+4. Reed weg van, of de openbare weg op vanaf, een parkeerplaats, inrit of oprit — d.w.z. het voertuig kwam van een parkeerterrein/oprit/inrit af en voegde in op de weg (breder dan nummer 2: hier gaat het om de weg oprijden vanaf zo'n terrein, niet per se uit een specifiek parkeervak).
+5. Reed op een parkeerplaats, inrit, oprit of onverharde weg — gewoon rijden binnen zo'n terrein, niet het in- of uitrijden zelf.
+6. Wilde een rotonde oprijden (naderde de rotonde, nog niet erop).
+7. Reed al op een rotonde.
+8. Botste op de achterzijde van een ander voertuig, terwijl beide voertuigen in dezelfde richting op dezelfde rijstrook reden.
+9. Reed in dezelfde richting maar op een andere rijstrook dan het andere voertuig.
+10. Veranderde van rijstrook.
+11. Haalde in.
+12. Ging rechtsaf.
+13. Ging linksaf.
+14. Reed achteruit (op de openbare weg, niet het uitparkeren zelf — zie nummer 2 voor achteruit een parkeervak uitrijden).
+15. Kwam op de weghelft/rijbaan bestemd voor het tegemoetkomend verkeer.
+16. Kwam van rechts op een kruising.
+17. Lette niet op een voorrangsbord of rood verkeerslicht.
+
+Let vooral goed op het verschil tussen UITPARKEREN (nummer 2: een parkeervak verlaten) en INPARKEREN (nummer 3: een parkeervak in rijden om te gaan parkeren) — dit zijn tegengestelde bewegingen die vaak door elkaar gehaald worden. Lees de beschrijving zorgvuldig: reed het voertuig een parkeerplaats UIT (2/4) of juist IN (3)?
 Wees terughoudend: kies alleen vakjes waar de tekst duidelijk op wijst.`;
 
 export const PARTNER_KENTEKEN_OCR_SYSTEM = `Lees dit Nederlandse of Belgische kentekenbewijs en geef ALLEEN geldig JSON: {"kenteken":"..."}`;
