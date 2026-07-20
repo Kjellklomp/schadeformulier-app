@@ -100,8 +100,9 @@ export default function StepVehicle({ kenteken, setKenteken, verzekering, setVer
       <Label className="mt-6">Verzekeringsbewijs / groene kaart</Label>
       <UploadBox
         icon={FileText}
-        label="Tik om foto of PDF-scan te kiezen"
-        hint="JPG of PNG"
+        label="Tik om foto of PDF te kiezen"
+        hint="JPG, PNG of PDF"
+        accept="image/*,application/pdf"
         files={verzekeringFiles}
         onFilesSelected={handleVerzekeringUpload}
       />

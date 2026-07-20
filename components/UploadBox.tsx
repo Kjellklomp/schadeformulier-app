@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef } from "react";
-import { Check, LucideIcon } from "lucide-react";
+import { Check, FileText, LucideIcon } from "lucide-react";
 
 interface UploadBoxProps {
   icon: LucideIcon;
@@ -69,10 +69,20 @@ export default function UploadBox({
       />
       {thumbs.length > 0 && (
         <div className="flex gap-2 mt-2.5 flex-wrap">
-          {thumbs.map((src, i) => (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img key={i} src={src} alt="" className="w-[70px] h-12 object-cover rounded-lg border border-line-soft" />
-          ))}
+          {thumbs.map((src, i) =>
+            files[i].type === "application/pdf" ? (
+              <div
+                key={src}
+                className="flex items-center gap-1.5 h-12 px-2.5 rounded-lg border border-line-soft bg-paper-tint text-[12px] text-ink-soft max-w-[140px]"
+              >
+                <FileText size={16} strokeWidth={1.75} className="text-navy shrink-0" />
+                <span className="truncate">{files[i].name}</span>
+              </div>
+            ) : (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img key={src} src={src} alt="" className="w-[70px] h-12 object-cover rounded-lg border border-line-soft" />
+            )
+          )}
         </div>
       )}
     </div>

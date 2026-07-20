@@ -4,10 +4,12 @@ import { NextRequest, NextResponse } from "next/server";
 export const runtime = "nodejs";
 
 const MODEL = "claude-sonnet-4-6";
-const MAX_IMAGES = 3;
-const ALLOWED_MEDIA_TYPES = new Set(["image/jpeg", "image/png", "image/webp", "image/gif"]);
+const MAX_ATTACHMENTS = 3;
+const IMAGE_MEDIA_TYPES = new Set(["image/jpeg", "image/png", "image/webp", "image/gif"]);
+const PDF_MEDIA_TYPE = "application/pdf";
+const ALLOWED_MEDIA_TYPES = new Set([...IMAGE_MEDIA_TYPES, PDF_MEDIA_TYPE]);
 
-interface VisionImageBlock {
+interface VisionAttachment {
   mediaType: string;
   data: string;
 }
@@ -15,7 +17,7 @@ interface VisionImageBlock {
 interface VisionRequestBody {
   system: string;
   userText: string;
-  images?: VisionImageBlock[];
+  images?: VisionAttachment[];
 }
 
 export async function POST(request: NextRequest) {
@@ -38,13 +40,13 @@ export async function POST(request: NextRequest) {
   if (typeof system !== "string" || typeof userText !== "string") {
     return NextResponse.json({ error: "system en userText zijn verplicht." }, { status: 400 });
   }
-  if (images && images.length > MAX_IMAGES) {
-    return NextResponse.json({ error: `Maximaal ${MAX_IMAGES} afbeeldingen per aanvraag.` }, { status: 400 });
+  if (images && images.length > MAX_ATTACHMENTS) {
+    return NextResponse.json({ error: `Maximaal ${MAX_ATTACHMENTS} bijlagen per aanvraag.` }, { status: 400 });
   }
   if (images) {
     for (const img of images) {
       if (!ALLOWED_MEDIA_TYPES.has(img.mediaType)) {
-        return NextResponse.json({ error: `Niet-ondersteund beeldformaat: ${img.mediaType}` }, { status: 400 });
+        return NextResponse.json({ error: `Niet-ondersteund bestandsformaat: ${img.mediaType}` }, { status: 400 });
       }
     }
   }
@@ -52,14 +54,21 @@ export async function POST(request: NextRequest) {
   const content: Anthropic.MessageParam["content"] = [];
   if (images) {
     for (const img of images) {
-      content.push({
-        type: "image",
-        source: {
-          type: "base64",
-          media_type: img.mediaType as "image/jpeg" | "image/png" | "image/webp" | "image/gif",
-          data: img.data,
-        },
-      });
+      if (img.mediaType === PDF_MEDIA_TYPE) {
+        content.push({
+          type: "document",
+          source: { type: "base64", media_type: PDF_MEDIA_TYPE, data: img.data },
+        });
+      } else {
+        content.push({
+          type: "image",
+          source: {
+            type: "base64",
+            media_type: img.mediaType as "image/jpeg" | "image/png" | "image/webp" | "image/gif",
+            data: img.data,
+          },
+        });
+      }
     }
   }
   content.push({ type: "text", text: userText });
