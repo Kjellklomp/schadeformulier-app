@@ -45,11 +45,11 @@ export default function UploadBox({
         }`}
       >
         <div
-          className={`w-11 h-11 rounded-full mx-auto mb-2.5 flex items-center justify-center ${
-            filled ? "bg-green/15" : "bg-navy/[0.06]"
+          className={`w-14 h-14 rounded-full mx-auto mb-3 flex items-center justify-center transition-transform duration-150 ${
+            filled ? "bg-green/15" : "bg-navy/[0.07]"
           }`}
         >
-          {filled ? <Check size={20} strokeWidth={2.5} className="text-green" /> : <Icon size={20} strokeWidth={1.75} className="text-navy" />}
+          {filled ? <Check size={24} strokeWidth={2.5} className="text-green" /> : <Icon size={24} strokeWidth={1.75} className="text-navy" />}
         </div>
         <div className="text-[14.5px] font-medium text-ink">{label}</div>
         <div className="text-[12.5px] text-ink-soft mt-0.5">{hint}</div>

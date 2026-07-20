@@ -55,11 +55,11 @@ export default function StepSamen({ sessionId, partnerData, setPartnerData, onBa
       description="Laat de andere bestuurder onderstaande QR-code scannen met zijn/haar eigen telefoon. Die vult zijn kant (Voertuig B) rechtstreeks in — geen overtypen, geen los papier."
       footer={
         <>
-          <Button variant="secondary" onClick={onBack} icon={<ArrowLeft size={17} strokeWidth={2.25} />}>
+          <Button variant="secondary" compact aria-label="Terug" onClick={onBack} icon={<ArrowLeft size={17} strokeWidth={2.25} />}>
             Terug
           </Button>
           {!partnerData && (
-            <Button variant="secondary" onClick={onNext} icon={<SkipForward size={17} strokeWidth={2.25} />}>
+            <Button variant="secondary" compact aria-label="Overslaan" onClick={onNext} icon={<SkipForward size={17} strokeWidth={2.25} />}>
               Overslaan
             </Button>
           )}

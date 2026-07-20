@@ -106,79 +106,87 @@ export default function AppShell() {
 
   if (incomingSession) {
     return (
-      <div className="max-w-[720px] mx-auto px-4 pt-6 pb-24 w-full">
+      <div className="max-w-[720px] mx-auto px-4 pt-6 pb-32 w-full">
         <PartnerFlow sessionId={incomingSession} />
       </div>
     );
   }
 
   return (
-    <div className="max-w-[720px] mx-auto px-4 pt-6 pb-24 w-full">
-      <div className="no-print flex items-center gap-3 mb-5">
-        <div className="w-9 h-9 rounded-[10px] bg-gradient-to-b from-navy-2 to-navy shadow-[var(--shadow-button)] flex items-center justify-center text-amber font-heading font-bold text-[15px] shrink-0">
-          EU
-        </div>
-        <div>
-          <div className="font-heading font-semibold text-[15.5px] text-navy tracking-tight">Schadeformulier Snelinvuller</div>
-          <div className="text-[11.5px] text-ink-soft">
-            Vult jouw kant automatisch in, checkt live bij de RDW, en synct met de tegenpartij
+    <>
+      <header className="no-print sticky top-0 z-40 bg-paper/80 backdrop-blur-md border-b border-line-soft/70">
+        <div className="relative max-w-[720px] mx-auto px-4 py-4 flex items-center gap-3 overflow-hidden">
+          <div
+            className="pointer-events-none absolute -top-10 -left-6 w-40 h-40 rounded-full bg-amber/15 blur-3xl"
+            aria-hidden
+          />
+          <div className="relative w-9 h-9 rounded-[10px] bg-gradient-to-b from-navy-2 to-navy shadow-[var(--shadow-button)] flex items-center justify-center text-amber font-heading font-bold text-[15px] shrink-0">
+            EU
+          </div>
+          <div className="relative">
+            <div className="font-heading font-bold text-[15.5px] text-navy tracking-tight">Schadeformulier Snelinvuller</div>
+            <div className="text-[11.5px] text-ink-soft">
+              Vult jouw kant automatisch in, checkt live bij de RDW, en synct met de tegenpartij
+            </div>
           </div>
         </div>
+      </header>
+
+      <div className="max-w-[720px] mx-auto px-4 pt-5 pb-32 w-full">
+        <ChipRow />
+        <ProgressBar step={step} totalSteps={TOTAL_STEPS} />
+
+        {step === 1 && (
+          <StepPerson person={person} setPerson={setPerson} vn={vn} setVn={setVn} onNext={() => setStep(2)} />
+        )}
+        {step === 2 && (
+          <StepVehicle
+            kenteken={kenteken}
+            setKenteken={setKenteken}
+            verzekering={verzekering}
+            setVerzekering={setVerzekering}
+            onBack={() => setStep(1)}
+            onNext={() => setStep(3)}
+          />
+        )}
+        {step === 3 && (
+          <StepSamen
+            sessionId={sessionId}
+            partnerData={partnerData}
+            setPartnerData={setPartnerData}
+            onBack={() => setStep(2)}
+            onNext={() => setStep(4)}
+          />
+        )}
+        {step === 4 && (
+          <StepToedracht
+            text={toedrachtText}
+            setText={setToedrachtText}
+            data={toedrachtData}
+            setData={setToedrachtData}
+            conflictStatus={conflictStatus}
+            conflictData={conflictData}
+            onBack={() => setStep(3)}
+            onNext={() => setStep(5)}
+          />
+        )}
+        {step >= 5 && (
+          <StepOverzicht
+            person={person}
+            vn={vn}
+            kenteken={kenteken}
+            verzekering={verzekering}
+            toedracht={toedrachtData}
+            partnerData={partnerData}
+            startTime={startTime}
+            onBack={() => setStep(4)}
+          />
+        )}
+
+        <div className="no-print text-center text-[11.5px] text-ink-soft mt-6 leading-relaxed">
+          Prototype ter validatie. Gegevens blijven lokaal tot je ze exporteert.
+        </div>
       </div>
-
-      <ChipRow />
-      <ProgressBar step={step} totalSteps={TOTAL_STEPS} />
-
-      {step === 1 && (
-        <StepPerson person={person} setPerson={setPerson} vn={vn} setVn={setVn} onNext={() => setStep(2)} />
-      )}
-      {step === 2 && (
-        <StepVehicle
-          kenteken={kenteken}
-          setKenteken={setKenteken}
-          verzekering={verzekering}
-          setVerzekering={setVerzekering}
-          onBack={() => setStep(1)}
-          onNext={() => setStep(3)}
-        />
-      )}
-      {step === 3 && (
-        <StepSamen
-          sessionId={sessionId}
-          partnerData={partnerData}
-          setPartnerData={setPartnerData}
-          onBack={() => setStep(2)}
-          onNext={() => setStep(4)}
-        />
-      )}
-      {step === 4 && (
-        <StepToedracht
-          text={toedrachtText}
-          setText={setToedrachtText}
-          data={toedrachtData}
-          setData={setToedrachtData}
-          conflictStatus={conflictStatus}
-          conflictData={conflictData}
-          onBack={() => setStep(3)}
-          onNext={() => setStep(5)}
-        />
-      )}
-      {step >= 5 && (
-        <StepOverzicht
-          person={person}
-          vn={vn}
-          kenteken={kenteken}
-          verzekering={verzekering}
-          toedracht={toedrachtData}
-          partnerData={partnerData}
-          startTime={startTime}
-          onBack={() => setStep(4)}
-        />
-      )}
-
-      <div className="no-print text-center text-[11.5px] text-ink-soft mt-6 leading-relaxed">
-        Prototype ter validatie. Gegevens blijven lokaal tot je ze exporteert.
-      </div>
-    </div>
+    </>
   );
 }

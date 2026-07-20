@@ -6,6 +6,8 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: Variant;
   icon?: ReactNode;
   fullWidth?: boolean;
+  /** Hides the text label below the `sm` breakpoint, keeping only the icon (requires aria-label). */
+  compact?: boolean;
 }
 
 const VARIANT_CLASS: Record<Variant, string> = {
@@ -21,19 +23,22 @@ export default function Button({
   variant = "primary",
   icon,
   fullWidth,
+  compact,
   className = "",
   children,
   ...props
 }: ButtonProps) {
   return (
     <button
-      className={`inline-flex items-center justify-center gap-2 min-h-[48px] rounded-2xl px-5 py-3 font-semibold text-[14.5px] cursor-pointer transition-all duration-150 ease-out active:scale-[0.97] disabled:active:scale-100 ${
+      className={`inline-flex items-center justify-center gap-2 min-h-[48px] rounded-2xl ${
+        compact ? "px-3.5 sm:px-5" : "px-5"
+      } py-3 font-semibold text-[14.5px] cursor-pointer transition-all duration-150 ease-out active:scale-[0.97] disabled:active:scale-100 ${
         fullWidth ? "flex-1" : ""
       } ${VARIANT_CLASS[variant]} ${className}`}
       {...props}
     >
       {icon}
-      {children}
+      {compact ? <span className="hidden sm:inline">{children}</span> : children}
     </button>
   );
 }
