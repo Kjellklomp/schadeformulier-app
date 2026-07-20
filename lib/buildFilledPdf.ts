@@ -1,11 +1,9 @@
 import { PDFDocument, StandardFonts, rgb } from "pdf-lib";
 import { PersonState, VerzekeringnemerState, KentekenOcrData, VerzekeringOcrData, ToedrachtOcrData } from "./types";
-import { FIELD_COORDS, CHECKBOX_COORDS, TOEDRACHT_CHECKBOX_A, toPdfY } from "./pdfFieldCoords";
+import { FIELD_COORDS, CHECKBOX_COORDS, TOEDRACHT_CHECKBOX_A, TOEDRACHT_CHECKBOX_SIZE, FieldCoord, toPdfY } from "./pdfFieldCoords";
 
 const PDF_TEMPLATE_URL = "/schadeformulier-leeg.pdf";
 const INK_COLOR = rgb(0.09, 0.16, 0.29);
-const AI_COLOR = rgb(0.71, 0.26, 0.18);
-const CHECKBOX_MARK_SIZE = 9;
 
 export interface BuildFilledPdfInput {
   person: PersonState;
@@ -27,11 +25,22 @@ function formatDateEU(iso?: string | null): string | undefined {
   return m ? `${m[3]}-${m[2]}-${m[1]}` : iso;
 }
 
-// Compact DD-MM-JJ voor het smalle datumvak naast "Tijd" op vak 1 van het formulier.
+// Compact DDMMJJ (zonder scheidingstekens) voor het smalle datumvak naast "Tijd" op vak 1.
+// Bewust géén "-" of "." tussen de cijfergroepen: sommige PDF-viewers herkennen korte
+// DD-MM-JJ/DD.MM.JJ-achtige patronen als datumveld en vervangen de weergave dan door hun
+// eigen (veel te grote) datum-widget, waardoor het vakje overloopt. Zonder scheidingstekens
+// wordt dat patroon niet herkend en blijft het gewoon leesbare tekst.
 function formatDateEUShort(iso?: string | null): string | undefined {
   if (!iso) return undefined;
   const m = ISO_DATE_PATTERN.exec(iso);
-  return m ? `${m[3]}-${m[2]}-${m[1].slice(2)}` : iso;
+  return m ? `${m[3]}${m[2]}${m[1].slice(2)}` : iso;
+}
+
+// Zelfde reden als hierboven: "14:30" wordt door sommige viewers als tijdveld herkend en
+// vervangen door hun eigen widget. "14u30" (in NL/BE een heel gangbare tijdnotatie) niet.
+function formatTimeSafe(time?: string | null): string | undefined {
+  if (!time) return undefined;
+  return time.replace(":", "u");
 }
 
 export async function buildFilledPdf({
@@ -45,6 +54,7 @@ export async function buildFilledPdf({
   const pdfDoc = await PDFDocument.load(templateBytes);
   const page = pdfDoc.getPages()[0];
   const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
+  const form = pdfDoc.getForm();
 
   const p = person;
   const effectiveVn: VerzekeringnemerState = vn.zelfde
@@ -54,103 +64,120 @@ export async function buildFilledPdf({
   const v: Partial<VerzekeringOcrData> = verzekering ?? {};
   const t: Partial<ToedrachtOcrData> = toedracht ?? {};
 
-  function draw(key: string, value?: string | null) {
-    if (!value) return;
-    const coord = FIELD_COORDS[key];
-    if (!coord) return;
-    page.drawText(String(value), { x: coord.x, y: toPdfY(coord.yBottom), size: coord.size ?? 9, font, color: INK_COLOR });
-  }
+  let fieldSeq = 0;
 
-  // Zoals draw(), maar knijpt de fontgrootte tot de tekst binnen maxWidth past — voorkomt overlap in smalle vakjes (bv. datum naast tijd).
-  function drawFit(key: string, value: string | undefined, maxWidth: number) {
-    if (!value) return;
-    const coord = FIELD_COORDS[key];
+  // Legt een écht (leeg of vooringevuld) PDF-formulierveld op de plek van `key`, zodat de
+  // ontvanger het na downloaden nog kan corrigeren of aanvullen — de tekst wordt dus niet
+  // onwijzigbaar op de pagina "gebrand".
+  function textField(key: string, value: string | undefined, opts?: { multiline?: boolean }) {
+    const coord: FieldCoord | undefined = FIELD_COORDS[key];
     if (!coord) return;
-    let size = coord.size ?? 9;
-    while (size > 5.5 && font.widthOfTextAtSize(value, size) > maxWidth) size -= 0.5;
-    page.drawText(value, { x: coord.x, y: toPdfY(coord.yBottom), size, font, color: INK_COLOR });
-  }
-
-  // Centreert de "X" exact op het middelpunt van het vakje, op basis van de echte
-  // font-metingen (drawText plaatst tekst anders vanaf de linker-benedenhoek van de baseline).
-  function checkX(coord?: { x: number; y: number }) {
-    if (!coord) return;
-    const glyphWidth = font.widthOfTextAtSize("X", CHECKBOX_MARK_SIZE);
-    const glyphHeight = font.heightAtSize(CHECKBOX_MARK_SIZE, { descender: false });
-    page.drawText("X", {
-      x: coord.x - glyphWidth / 2,
-      y: toPdfY(coord.y, 0) - glyphHeight / 2,
-      size: CHECKBOX_MARK_SIZE,
-      font,
-      color: AI_COLOR,
-    });
-  }
-
-  function wrapDraw(text: string | undefined, keys: string[], maxWidth: number, size = 8) {
-    if (!text) return;
-    const words = text.split(" ");
-    const lines = [""];
-    for (const word of words) {
-      const candidate = (lines[lines.length - 1] + " " + word).trim();
-      if (lines[lines.length - 1] !== "" && font.widthOfTextAtSize(candidate, size) > maxWidth) lines.push(word);
-      else lines[lines.length - 1] = candidate;
+    let y: number;
+    let height: number;
+    if (coord.height) {
+      // Meerregelig blok: yBottom is de bovenkant van het tekstgebied, de box loopt
+      // omlaag over de opgegeven hoogte (zie pdfFieldCoords.ts).
+      height = coord.height;
+      y = toPdfY(coord.yBottom + height, 0);
+    } else {
+      // Eenregelig veld: yBottom is de basislijn van het bijbehorende label (gemeten op
+      // het lege formulier), dus de box moet vanaf net onder die lijn omhóóg lopen — niet
+      // omlaag, anders belandt de tekst in de rij eronder. 10pt geeft ruim baan aan een
+      // 9pt-letter zonder de volgende rij (~12,4pt verderop) te raken.
+      height = 10;
+      y = toPdfY(coord.yBottom + 1, 0);
     }
-    lines.slice(0, keys.length).forEach((line, i) => draw(keys[i], line));
+    const tf = form.createTextField(`voertuigA.${key}.${fieldSeq++}`);
+    if (opts?.multiline) tf.enableMultiline();
+    tf.addToPage(page, {
+      x: coord.x,
+      y,
+      width: coord.width,
+      height,
+      font,
+      textColor: INK_COLOR,
+      borderWidth: 0,
+      // pdf-lib vult een veld standaard wit als je `backgroundColor` weglaat — dat overplakt
+      // de bestaande opdruk van het formulier (labels/lijntjes) eronder. Expliciet op
+      // `undefined` zetten (i.p.v. de optie helemaal weglaten) voorkomt die default.
+      backgroundColor: undefined,
+      borderColor: undefined,
+    });
+    tf.setFontSize(coord.size ?? 9);
+    if (value) tf.setText(value);
   }
 
-  drawFit("datum", formatDateEUShort(t.datum), 22);
-  drawFit("tijd", t.tijd, 30);
-  draw("locatie_plaats", t.plaats);
-  draw("locatie_land", t.land);
-  draw("locatie_straat", t.straat);
-  if (t.gewonden === "ja") checkX(CHECKBOX_COORDS.gewonden_ja);
-  if (t.gewonden === "nee") checkX(CHECKBOX_COORDS.gewonden_nee);
-  if (t.materiele_schade_andere_voertuigen === "ja") checkX(CHECKBOX_COORDS.schade_voert_ja);
-  if (t.materiele_schade_andere_voertuigen === "nee") checkX(CHECKBOX_COORDS.schade_voert_nee);
-  if (t.materiele_schade_andere_objecten === "ja") checkX(CHECKBOX_COORDS.schade_obj_ja);
-  if (t.materiele_schade_andere_objecten === "nee") checkX(CHECKBOX_COORDS.schade_obj_nee);
+  // Legt een écht (aan- of uitvinkbaar) PDF-checkbox-veld op de plek van `coord`, gecentreerd
+  // op basis van de gemeten vakjesgrootte — ook checkboxen blijven zo na downloaden aanpasbaar.
+  function checkboxField(name: string, coord: { x: number; y: number; size: number } | undefined, checked: boolean) {
+    if (!coord) return;
+    const cb = form.createCheckBox(`voertuigA.${name}.${fieldSeq++}`);
+    cb.addToPage(page, {
+      x: coord.x - coord.size / 2,
+      y: toPdfY(coord.y, 0) - coord.size / 2,
+      width: coord.size,
+      height: coord.size,
+      borderWidth: 0,
+    });
+    if (checked) cb.check();
+  }
 
-  draw("vn_naam", effectiveVn.naam);
-  draw("vn_voornaam", effectiveVn.voornaam);
-  draw("vn_adres", effectiveVn.adres);
-  draw("vn_postcode", effectiveVn.postcode);
-  draw("vn_plaats", effectiveVn.plaats);
-  draw("vn_land", effectiveVn.land);
-  draw("vn_tel", effectiveVn.tel);
+  textField("datum", formatDateEUShort(t.datum));
+  textField("tijd", formatTimeSafe(t.tijd));
+  textField("locatie_plaats", t.plaats);
+  textField("locatie_land", t.land);
+  textField("locatie_straat", t.straat);
+  checkboxField("gewonden_ja", CHECKBOX_COORDS.gewonden_ja, t.gewonden === "ja");
+  checkboxField("gewonden_nee", CHECKBOX_COORDS.gewonden_nee, t.gewonden === "nee");
+  checkboxField("schade_voert_ja", CHECKBOX_COORDS.schade_voert_ja, t.materiele_schade_andere_voertuigen === "ja");
+  checkboxField("schade_voert_nee", CHECKBOX_COORDS.schade_voert_nee, t.materiele_schade_andere_voertuigen === "nee");
+  checkboxField("schade_obj_ja", CHECKBOX_COORDS.schade_obj_ja, t.materiele_schade_andere_objecten === "ja");
+  checkboxField("schade_obj_nee", CHECKBOX_COORDS.schade_obj_nee, t.materiele_schade_andere_objecten === "nee");
+
+  textField("vn_naam", effectiveVn.naam);
+  textField("vn_voornaam", effectiveVn.voornaam);
+  textField("vn_adres", effectiveVn.adres);
+  textField("vn_postcode", effectiveVn.postcode);
+  textField("vn_plaats", effectiveVn.plaats);
+  textField("vn_land", effectiveVn.land);
+  textField("vn_tel", effectiveVn.tel);
 
   const merkType = [k.merk, k.handelsbenaming || k.type].filter(Boolean).join(" ").trim();
-  draw("merk_type", merkType || undefined);
-  draw("kenteken", k.kenteken);
-  draw("land_registratie", k.land || "Nederland");
+  textField("merk_type", merkType || undefined);
+  textField("kenteken", k.kenteken);
+  textField("land_registratie", k.land || "Nederland");
 
-  draw("verz_naam", v.maatschappij);
-  draw("polisnr", v.polisnr);
-  draw("groenekaart", v.groenekaart);
-  draw("geldig_vanaf", formatDateEU(v.van));
-  draw("geldig_tot_verz", formatDateEU(v.tot));
+  textField("verz_naam", v.maatschappij);
+  textField("polisnr", v.polisnr);
+  textField("groenekaart", v.groenekaart);
+  textField("geldig_vanaf", formatDateEU(v.van));
+  textField("geldig_tot_verz", formatDateEU(v.tot));
 
-  draw("best_naam", p.naam);
-  draw("best_voornaam", p.voornaam);
-  draw("geboortedatum", formatDateEU(p.geboortedatum));
-  draw("best_adres", p.adres);
-  draw("best_postcode", p.postcode);
-  draw("best_plaats", p.plaats);
-  draw("best_land", p.land);
-  draw("best_tel", p.tel);
-  draw("rijbewijsnr", p.rijbewijsnr);
-  draw("categorie", p.categorie);
-  draw("geldigtot_rb", formatDateEU(p.geldigtot));
+  textField("best_naam", p.naam);
+  textField("best_voornaam", p.voornaam);
+  textField("geboortedatum", formatDateEU(p.geboortedatum));
+  textField("best_adres", p.adres);
+  textField("best_postcode", p.postcode);
+  textField("best_plaats", p.plaats);
+  textField("best_land", p.land);
+  textField("best_tel", p.tel);
+  textField("rijbewijsnr", p.rijbewijsnr);
+  textField("categorie", p.categorie);
+  textField("geldigtot_rb", formatDateEU(p.geldigtot));
 
-  (t.toedracht_vakjes_A || []).forEach((n) => {
+  // Alle 17 toedracht-vakjes krijgen een checkbox-veld — ook de vakjes die de AI niet
+  // aankruiste, zodat de gebruiker zelf nog kan corrigeren of aanvullen.
+  for (let n = 1; n <= 17; n++) {
     const y = TOEDRACHT_CHECKBOX_A.rows[n];
-    if (y) checkX({ x: TOEDRACHT_CHECKBOX_A.x, y });
-  });
+    checkboxField(`toedracht_${n}`, { x: TOEDRACHT_CHECKBOX_A.x, y, size: TOEDRACHT_CHECKBOX_SIZE }, (t.toedracht_vakjes_A || []).includes(n));
+  }
 
-  wrapDraw(t.zichtbare_schade_A, ["zichtbare_schade_1", "zichtbare_schade_2"], 95);
-  wrapDraw(t.opmerkingen, ["opmerkingen_1", "opmerkingen_2", "opmerkingen_3"], 160);
+  textField("zichtbare_schade_A", t.zichtbare_schade_A, { multiline: true });
+  textField("opmerkingen", t.opmerkingen, { multiline: true });
 
   // Vak 13 (situatieschets) laten we altijd leeg — dat tekenen beide partijen samen met de hand in.
 
+  form.updateFieldAppearances(font);
   const outBytes = await pdfDoc.save();
   return { bytes: outBytes };
 }
