@@ -78,6 +78,12 @@ export default function AppShell() {
   const [startTime] = useState(() => Date.now());
   const conflictStartedRef = useRef(false);
 
+  // Elke stap begint bovenaan — de hero is hoog genoeg dat een oude scrollpositie anders
+  // de kaarttitel uit beeld zou houden.
+  useEffect(() => {
+    window.scrollTo({ top: 0 });
+  }, [step]);
+
   useEffect(() => {
     if (conflictStartedRef.current || !toedrachtData || !partnerData?.toedracht) return;
     conflictStartedRef.current = true;
@@ -104,36 +110,48 @@ export default function AppShell() {
     };
   }, [toedrachtData, partnerData]);
 
+  const hero = (
+    <header className="no-print relative bg-gradient-to-b from-navy-2 to-navy pb-24 overflow-hidden">
+      <div
+        className="pointer-events-none absolute -top-28 right-[-12%] w-96 h-96 rounded-full bg-amber/20 blur-3xl"
+        aria-hidden
+      />
+      <div
+        className="pointer-events-none absolute bottom-[-40%] left-[-10%] w-72 h-72 rounded-full bg-white/[0.04] blur-2xl"
+        aria-hidden
+      />
+      <div className="relative max-w-[720px] mx-auto px-4 pt-9">
+        <div className="flex items-center gap-3.5">
+          <div className="w-11 h-11 rounded-2xl bg-white/10 border border-white/15 flex items-center justify-center text-amber font-heading font-bold text-[17px] shrink-0">
+            EU
+          </div>
+          <h1 className="font-heading font-bold text-[24px] sm:text-[28px] text-white tracking-tight leading-tight">
+            Schadeformulier Snelinvuller
+          </h1>
+        </div>
+        <p className="text-white/65 text-[13.5px] mt-3.5 max-w-md leading-relaxed">
+          Vult jouw kant automatisch in, checkt live bij de RDW, en synct met de tegenpartij.
+        </p>
+        {!incomingSession && <ChipRow />}
+      </div>
+    </header>
+  );
+
   if (incomingSession) {
     return (
-      <div className="max-w-[720px] mx-auto px-4 pt-6 pb-32 w-full">
-        <PartnerFlow sessionId={incomingSession} />
-      </div>
+      <>
+        {hero}
+        <div className="max-w-[720px] mx-auto px-4 -mt-16 pb-32 w-full relative">
+          <PartnerFlow sessionId={incomingSession} />
+        </div>
+      </>
     );
   }
 
   return (
     <>
-      <header className="no-print sticky top-0 z-40 bg-paper/80 backdrop-blur-md border-b border-line-soft/70">
-        <div className="relative max-w-[720px] mx-auto px-4 py-4 flex items-center gap-3 overflow-hidden">
-          <div
-            className="pointer-events-none absolute -top-10 -left-6 w-40 h-40 rounded-full bg-amber/15 blur-3xl"
-            aria-hidden
-          />
-          <div className="relative w-9 h-9 rounded-[10px] bg-gradient-to-b from-navy-2 to-navy shadow-[var(--shadow-button)] flex items-center justify-center text-amber font-heading font-bold text-[15px] shrink-0">
-            EU
-          </div>
-          <div className="relative">
-            <div className="font-heading font-bold text-[15.5px] text-navy tracking-tight">Schadeformulier Snelinvuller</div>
-            <div className="text-[11.5px] text-ink-soft">
-              Vult jouw kant automatisch in, checkt live bij de RDW, en synct met de tegenpartij
-            </div>
-          </div>
-        </div>
-      </header>
-
-      <div className="max-w-[720px] mx-auto px-4 pt-5 pb-32 w-full">
-        <ChipRow />
+      {hero}
+      <div className="max-w-[720px] mx-auto px-4 -mt-16 pb-32 w-full relative">
         <ProgressBar step={step} totalSteps={TOTAL_STEPS} />
 
         {step === 1 && (

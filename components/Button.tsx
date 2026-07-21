@@ -30,9 +30,9 @@ export default function Button({
 }: ButtonProps) {
   return (
     <button
-      className={`inline-flex items-center justify-center gap-2 min-h-[48px] rounded-2xl ${
-        compact ? "px-3.5 sm:px-5" : "px-5"
-      } py-3 font-semibold text-[14.5px] cursor-pointer transition-all duration-150 ease-out active:scale-[0.97] disabled:active:scale-100 ${
+      className={`inline-flex items-center justify-center gap-2 min-h-[50px] rounded-full ${
+        compact ? "px-4 sm:px-6" : "px-6"
+      } py-3 font-semibold text-[14.5px] tracking-[0.01em] cursor-pointer transition-all duration-150 ease-out active:scale-[0.97] disabled:active:scale-100 ${
         fullWidth ? "flex-1" : ""
       } ${VARIANT_CLASS[variant]} ${className}`}
       {...props}

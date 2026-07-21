@@ -3,20 +3,20 @@ import { Mic, Radar, QrCode, Sparkles } from "lucide-react";
 const CHIPS = [
   { icon: Mic, label: "Spraak → formulier" },
   { icon: Radar, label: "Live RDW-check" },
-  { icon: QrCode, label: "Samen invullen via QR" },
+  { icon: QrCode, label: "Samen via QR" },
   { icon: Sparkles, label: "AI-conflictcheck" },
 ];
 
 export default function ChipRow() {
   return (
-    <div className="no-print flex flex-wrap gap-2 mb-5">
+    <div className="no-print flex flex-wrap gap-2 mt-6">
       {CHIPS.map(({ icon: Icon, label }) => (
         <div
           key={label}
-          className="bg-paper-2 border border-line-soft rounded-full pl-1.5 pr-3 py-1.5 text-[12.5px] font-semibold text-navy-2 flex items-center gap-2 shadow-[var(--shadow-card)]"
+          className="bg-white/[0.08] border border-white/15 rounded-full pl-1.5 pr-3.5 py-1.5 text-[12px] font-medium text-white/90 flex items-center gap-2 backdrop-blur-sm"
         >
-          <span className="w-7 h-7 rounded-full bg-navy/[0.07] flex items-center justify-center shrink-0">
-            <Icon size={14} strokeWidth={2.25} className="text-amber-deep" />
+          <span className="w-6 h-6 rounded-full bg-white/10 flex items-center justify-center shrink-0">
+            <Icon size={13} strokeWidth={2} className="text-amber" />
           </span>
           {label}
         </div>

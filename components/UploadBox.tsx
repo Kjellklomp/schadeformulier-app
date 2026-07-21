@@ -40,7 +40,7 @@ export default function UploadBox({
       <button
         type="button"
         onClick={() => inputRef.current?.click()}
-        className={`w-full border-[1.5px] border-dashed rounded-2xl p-5 text-center cursor-pointer bg-paper-tint mt-1.5 transition-all duration-150 ease-out hover:border-amber hover:bg-white focus:outline-none focus-visible:shadow-[var(--shadow-focus)] ${
+        className={`w-full border-[1.5px] border-dashed rounded-[20px] p-6 text-center cursor-pointer bg-paper-tint/60 mt-1.5 transition-all duration-150 ease-out hover:border-amber hover:bg-white focus:outline-none focus-visible:shadow-[var(--shadow-focus)] ${
           filled ? "border-solid border-green/50 bg-[#F1F7F3]" : "border-line"
         }`}
       >
