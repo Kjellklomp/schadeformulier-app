@@ -55,9 +55,15 @@ export const FIELD_COORDS: Record<string, FieldCoord> = {
   categorie: { x: 108, yBottom: 630.0, width: 105 },
   geldigtot_rb: { x: 78, yBottom: 642.3, width: 135, size: 8 },
 
-  // Meerregelige blokken: x/yBottom is de bovenkant van het bloktekstgebied.
-  zichtbare_schade_A: { x: 44, yBottom: 778, width: 375, height: 26, size: 8 },
-  opmerkingen: { x: 42, yBottom: 832, width: 380, height: 36, size: 8 },
+  // Meerregelige blokken: x/yBottom is de bovenkant van het bloktekstgebied, height loopt
+  // omlaag. Pixel-gemeten op het lege formulier:
+  //  - vak 11 "Zichtbare schade aan voertuig A": smalle blauwe kolom, box x 37.5→145.5,
+  //    3 stippellijnen op y≈780.5/790.5/800.5, onderrand y=807. De brede grid rechts is
+  //    vak 13 (situatieschets), NIET dit vak — daar liep de tekst voorheen overheen.
+  //  - vak 14 "Mijn opmerkingen": box x 37.5→214, 3 stippellijnen op y≈836.5/846.5/856.5,
+  //    onderrand y=864. Rechts daarvan begint vak 15 (handtekeningen).
+  zichtbare_schade_A: { x: 41, yBottom: 775, width: 101, height: 28, size: 8 },
+  opmerkingen: { x: 41, yBottom: 831, width: 170, height: 27, size: 8 },
 };
 
 export interface CheckboxCoord {
