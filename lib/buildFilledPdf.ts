@@ -117,8 +117,17 @@ export async function buildFilledPdf({
       borderColor: undefined,
     });
     const preferredSize = coord.size ?? 9;
-    const fontSize =
-      value && !opts?.multiline ? fitFontSize(value, preferredSize, coord.width - HORIZONTAL_PADDING) : preferredSize;
+    let fontSize: number;
+    if (!value) {
+      fontSize = preferredSize;
+    } else if (opts?.multiline) {
+      // 0 = automatisch: pdf-lib's eigen meerregel-layout (breekt woorden af over regels
+      // én verkleint de letter) zorgt dat lange tekst binnen de box blijft, zowel in
+      // breedte als in hoogte — iets wat een vaste grootte niet garandeert.
+      fontSize = 0;
+    } else {
+      fontSize = fitFontSize(value, preferredSize, coord.width - HORIZONTAL_PADDING);
+    }
     tf.setFontSize(fontSize);
     if (value) tf.setText(value);
   }
